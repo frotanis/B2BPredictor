@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/B2BPredictor.Api/B2BPredictor.Api.csproj" />
+    <Project Path="src/B2BPredictor.Application/B2BPredictor.Application.csproj" />
+    <Project Path="src/B2BPredictor.Domain/B2BPredictor.Domain.csproj" />
+    <Project Path="src/B2BPredictor.Infrastructure/B2BPredictor.Infrastructure.csproj" />
+    <Project Path="src/B2BPredictor.UI/B2BPredictor.UI.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/B2BPredictor.IntegrationTests/B2BPredictor.IntegrationTests.csproj" />
+    <Project Path="tests/B2BPredictor.UnitTests/B2BPredictor.UnitTests.csproj" />
+  </Folder>
+</Solution>
