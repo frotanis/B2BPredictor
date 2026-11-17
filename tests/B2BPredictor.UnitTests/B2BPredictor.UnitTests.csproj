@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\B2BPredictor.Domain\B2BPredictor.Domain.csproj" />
     <ProjectReference Include="..\..\src\B2BPredictor.Application\B2BPredictor.Application.csproj" />
+    <ProjectReference Include="..\..\src\B2BPredictor.Infrastructure\B2BPredictor.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

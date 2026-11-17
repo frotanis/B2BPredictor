@@ -2,6 +2,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\B2BPredictor.Application\B2BPredictor.Application.csproj" />
+    <PackageReference Include="Microsoft.ML" />
+    <PackageReference Include="Microsoft.ML.FastTree" />
   </ItemGroup>
 
   <PropertyGroup>
