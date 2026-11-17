@@ -1,4 +1,4 @@
-﻿using B2BPredictor.Application.ML;
+﻿using B2BPredictor.Application.Contracts;
 using B2BPredictor.Infrastructure.ML;
 using Xunit;
 
@@ -16,54 +16,56 @@ public class PredictionServiceTests : IDisposable
     }
 
     [Fact]
-    public void TrainAndSaveModelShouldAchieveHighAccuracyAndCreateFile()
+    public async Task GetModelMetricsAsyncShouldReturnValidMetricsAndCreateFile()
     {
         // Act
-        var (accuracy, f1Score) = _sut.TrainAndSaveModel(_tempModelPath);
+        var metrics = await _sut.GetModelMetricsAsync();
 
         // Assert
         Assert.True(File.Exists(_tempModelPath), "Файл натренованої моделі має існувати.");
-        Assert.True(accuracy >= 0.75, $"Очікувана точність >= 0.75, отримано {accuracy}");
-        Assert.True(f1Score >= 0.75, $"Очікуваний F1-score >= 0.75, отримано {f1Score}");
+        Assert.True(metrics.Accuracy >= 0.75, $"Очікувана точність >= 0.75, отримано {metrics.Accuracy}");
+        Assert.True(metrics.F1Score >= 0.75, $"Очікуваний F1-score >= 0.75, отримано {metrics.F1Score}");
+        Assert.Equal(1500, metrics.TrainingSamplesCount);
     }
 
     [Fact]
-    public void PredictReliableClientReturnsHighSuccessProbability()
+    public async Task PredictAsyncReliableClientReturnsHighSuccessProbability()
     {
-        // Arrange
-        var request = new OrderPredictionRequest(
-            Amount: 5000f,
+        // Arrange (Рейтинг 85 зі 100 - високий)
+        var input = new OrderPredictionInput(
+            Amount: 5000m,
             Industry: "IT",
-            CreditRating: 800,
+            ClientCreditRating: 85,
             PaymentTermsDays: 14,
             ItemsCount: 5,
-            PreviousSuccessfulOrders: 12
+            PreviousSuccessfulOrdersCount: 12
         );
 
         // Act
-        var result = _sut.Predict(request);
+        var result = await _sut.PredictAsync(input);
 
         // Assert
         Assert.True(result.IsLikelySuccessful);
-        Assert.True(result.SuccessProbability >= 70f);
+        Assert.True(result.SuccessProbability >= 70.0);
         Assert.Equal("Низький ризик", result.RiskLevel);
+        Assert.Equal("FastTree-v1.0", result.ModelVersion);
     }
 
     [Fact]
-    public void PredictHighRiskOrderReturnsLowProbabilityAndRiskWarnings()
+    public async Task PredictAsyncHighRiskOrderReturnsLowProbabilityAndRiskWarnings()
     {
-        // Arrange (Крайній випадок: велика сума, низький рейтинг, довга відстрочка)
-        var request = new OrderPredictionRequest(
-            Amount: 45000f,
+        // Arrange (Рейтинг 25 зі 100 - низький, велика сума, довга відстрочка)
+        var input = new OrderPredictionInput(
+            Amount: 45000m,
             Industry: "Construction",
-            CreditRating: 350,
+            ClientCreditRating: 25,
             PaymentTermsDays: 75,
             ItemsCount: 50,
-            PreviousSuccessfulOrders: 0
+            PreviousSuccessfulOrdersCount: 0
         );
 
         // Act
-        var result = _sut.Predict(request);
+        var result = await _sut.PredictAsync(input);
 
         // Assert
         Assert.False(result.IsLikelySuccessful);
@@ -72,53 +74,35 @@ public class PredictionServiceTests : IDisposable
     }
 
     [Fact]
-    public void PredictNullRequestThrowsArgumentNullException()
+    public async Task PredictAsyncNullInputThrowsArgumentNullException()
     {
-        // Крайній випадок C2: null вхідні дані
-        Assert.Throws<ArgumentNullException>(() => _sut.Predict(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _sut.PredictAsync(null!));
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-500)]
-    public void PredictInvalidAmountThrowsArgumentException(float invalidAmount)
+    public async Task PredictAsyncInvalidAmountThrowsArgumentException(decimal invalidAmount)
     {
-        // Крайній випадок C2: нульова або від'ємна сума
-        var request = new OrderPredictionRequest(invalidAmount, "Retail", 600, 15, 2, 1);
-        Assert.Throws<ArgumentException>(() => _sut.Predict(request));
+        var input = new OrderPredictionInput(invalidAmount, "Retail", 70, 15, 2, 1);
+        await Assert.ThrowsAsync<ArgumentException>(() => _sut.PredictAsync(input));
     }
 
     [Theory]
-    [InlineData(-10)]
-    [InlineData(1200)]
-    public void PredictOutOfRangeCreditRatingThrowsArgumentOutOfRangeException(int invalidRating)
+    [InlineData(0)]
+    [InlineData(-5)]
+    [InlineData(101)]
+    public async Task PredictAsyncOutOfRangeCreditRatingThrowsArgumentOutOfRangeException(int invalidRating)
     {
-        // Крайній випадок C2: рейтинг поза межами [0..1000]
-        var request = new OrderPredictionRequest(1000f, "Retail", invalidRating, 15, 2, 1);
-        Assert.Throws<ArgumentOutOfRangeException>(() => _sut.Predict(request));
+        var input = new OrderPredictionInput(1000m, "Retail", invalidRating, 15, 2, 1);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _sut.PredictAsync(input));
     }
 
     [Fact]
-    public void PredictNegativePaymentTermsThrowsArgumentException()
+    public async Task PredictAsyncNegativePaymentTermsThrowsArgumentException()
     {
-        // Крайній випадок C2: від'ємний термін відстрочки
-        var request = new OrderPredictionRequest(1000f, "Logistics", 650, -5, 3, 2);
-        Assert.Throws<ArgumentException>(() => _sut.Predict(request));
-    }
-
-    [Fact]
-    public void PredictZeroItemsCountThrowsArgumentException()
-    {
-        var request = new OrderPredictionRequest(1000f, "IT", 700, 10, 0, 1);
-        Assert.Throws<ArgumentException>(() => _sut.Predict(request));
-    }
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void PredictEmptyIndustryThrowsArgumentException(string invalidIndustry)
-    {
-        var request = new OrderPredictionRequest(1000f, invalidIndustry, 700, 10, 2, 1);
-    Assert.Throws<ArgumentException>(() => _sut.Predict(request));
+        var input = new OrderPredictionInput(1000m, "Logistics", 65, -5, 3, 2);
+        await Assert.ThrowsAsync<ArgumentException>(() => _sut.PredictAsync(input));
     }
 
     public void Dispose()

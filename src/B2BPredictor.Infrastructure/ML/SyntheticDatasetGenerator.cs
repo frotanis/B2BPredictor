@@ -12,22 +12,21 @@ public static class SyntheticDatasetGenerator
         for (int i = 0; i < count; i++)
         {
             var industry = Industries[random.Next(Industries.Length)];
-            var creditRating = random.Next(300, 851); // 300 - поганий, 850 - ідеальний
+            var creditRating = random.Next(1, 101); // Шкала 1-100 згідно зі спільними контрактами
             var paymentTermsDays = random.Next(0, 91); // від 0 до 90 днів відстрочки
             var itemsCount = random.Next(1, 100);
             var previousOrders = random.Next(0, 25);
-            var amount = (float)Math.Round(random.NextDouble() * 49500 + 500, 2); // від 500 до 50000
+            var amount = (float)Math.Round(random.NextDouble() * 49500 + 500, 2);
 
-            // Логіка розрахунку ймовірності успіху для навчання моделі реалістичним патернам
+            // Реалістичний розрахунок ймовірності успіху під шкалу рейтингу 1-100
             double score = 0.5;
-            score += (creditRating - 550) / 600.0; // високий рейтинг підвищує шанс
+            score += (creditRating - 50) / 100.0; // рейтинг > 50 підвищує шанс, < 50 знижує
             score -= (paymentTermsDays - 30) / 120.0; // велика відстрочка знижує шанс
             score += Math.Min(previousOrders * 0.02, 0.25); // постійні клієнти надійніші
-            if (amount > 35000 && creditRating < 600) score -= 0.25; // велика сума + низький рейтинг = ризик
+            if (amount > 35000 && creditRating < 45) score -= 0.25; // велика сума + низький рейтинг = ризик
             if (industry is "IT" or "Healthcare") score += 0.08;
             if (industry is "Construction") score -= 0.08;
 
-            // Додаємо трохи природного шуму
             score += (random.NextDouble() - 0.5) * 0.15;
 
             bool isSuccessful = score >= 0.5;
