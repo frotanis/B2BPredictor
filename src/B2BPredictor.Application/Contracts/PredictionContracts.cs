@@ -3,12 +3,12 @@
 namespace B2BPredictor.Application.Contracts;
 
 public sealed record OrderPredictionInput(
-    [property: Range(1, 100_000_000)] decimal Amount,
-    [property: Required, StringLength(100)] string Industry,
-    [property: Range(1, 100)] int ClientCreditRating,
-    [property: Range(0, 365)] int PaymentTermsDays,
-    [property: Range(1, 10_000)] int ItemsCount,
-    [property: Range(0, 10_000)] int PreviousSuccessfulOrdersCount);
+    [Range(1, 100_000_000)] decimal Amount,
+    [Required, StringLength(100)] string Industry,
+    [Range(1, 100)] int ClientCreditRating,
+    [Range(0, 365)] int PaymentTermsDays,
+    [Range(1, 10_000)] int ItemsCount,
+    [Range(0, 10_000)] int PreviousSuccessfulOrdersCount);
 
 public sealed record PredictionResultDto(
     double SuccessProbability,

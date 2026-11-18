@@ -12,16 +12,16 @@ public sealed record ClientDto(
     DateTime CreatedAtUtc);
 
 public sealed record CreateClientRequest(
-    [property: Required, StringLength(150, MinimumLength = 2)] string Name,
-    [property: Required, StringLength(100, MinimumLength = 2)] string Industry,
-    [property: Required, EmailAddress, StringLength(150)] string ContactEmail,
-    [property: Range(1, 100)] int CreditRating);
+    [Required, StringLength(150, MinimumLength = 2)] string Name,
+    [Required, StringLength(100, MinimumLength = 2)] string Industry,
+    [Required, EmailAddress, StringLength(150)] string ContactEmail,
+    [Range(1, 100)] int CreditRating);
 
 public sealed record UpdateClientRequest(
-    [property: Required, StringLength(150, MinimumLength = 2)] string Name,
-    [property: Required, StringLength(100, MinimumLength = 2)] string Industry,
-    [property: Required, EmailAddress, StringLength(150)] string ContactEmail,
-    [property: Range(1, 100)] int CreditRating);
+    [Required, StringLength(150, MinimumLength = 2)] string Name,
+    [Required, StringLength(100, MinimumLength = 2)] string Industry,
+    [Required, EmailAddress, StringLength(150)] string ContactEmail,
+    [Range(1, 100)] int CreditRating);
 
 public interface IClientService
 {

@@ -1,0 +1,5 @@
+root = true
+
+[src/B2BPredictor.Infrastructure/Persistence/Migrations/*.cs]
+generated_code = true
+dotnet_diagnostic.CA1861.severity = none

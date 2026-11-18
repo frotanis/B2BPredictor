@@ -25,15 +25,15 @@ public sealed record OrderDto(
     DateTime CreatedAtUtc);
 
 public sealed record CreateOrderRequest(
-    [property: Required] Guid ClientId,
-    [property: Range(1, 100_000_000)] decimal Amount,
-    [property: Range(0, 365)] int PaymentTermsDays,
-    [property: Range(1, 10_000)] int ItemsCount,
-    [property: StringLength(500)] string? Notes = null);
+    [Required] Guid ClientId,
+    [Range(1, 100_000_000)] decimal Amount,
+    [Range(0, 365)] int PaymentTermsDays,
+    [Range(1, 10_000)] int ItemsCount,
+    [StringLength(500)] string? Notes = null);
 
 public sealed record UpdateOrderStatusRequest(
-    [property: Required] OrderStatus Status,
-    [property: StringLength(500)] string? Notes = null);
+    [Required] OrderStatus Status,
+    [StringLength(500)] string? Notes = null);
 
 public sealed record OrderFilterQuery(
     OrderStatus? Status = null,
