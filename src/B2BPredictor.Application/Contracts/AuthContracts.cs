@@ -3,14 +3,14 @@
 namespace B2BPredictor.Application.Contracts;
 
 public sealed record RegisterRequest(
-    [property: Required, StringLength(100, MinimumLength = 2)] string FullName,
-    [property: Required, EmailAddress, StringLength(150)] string Email,
-    [property: Required, StringLength(100, MinimumLength = 6)] string Password,
-    [property: Required, StringLength(30)] string Role);
+    [Required, StringLength(100, MinimumLength = 2)] string FullName,
+    [Required, EmailAddress, StringLength(150)] string Email,
+    [Required, StringLength(100, MinimumLength = 6)] string Password,
+    [Required, StringLength(30)] string Role);
 
 public sealed record LoginRequest(
-    [property: Required, EmailAddress] string Email,
-    [property: Required] string Password);
+    [Required, EmailAddress] string Email,
+    [Required] string Password);
 
 public sealed record AuthResponse(
     string AccessToken,
