@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using B2BPredictor.Api.Models;
 using B2BPredictor.Application.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,11 +21,9 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequestModel request, CancellationToken ct)
+    public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
-        var result = await _authService.RegisterAsync(
-            new RegisterRequest(request.FullName, request.Email, request.Password, request.Role),
-            ct);
+        var result = await _authService.RegisterAsync(request, ct);
 
         return ToActionResult(result);
     }
@@ -35,9 +32,9 @@ public sealed class AuthController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequestModel request, CancellationToken ct)
+    public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        var result = await _authService.LoginAsync(new LoginRequest(request.Email, request.Password), ct);
+        var result = await _authService.LoginAsync(request, ct);
         return ToActionResult(result);
     }
 
