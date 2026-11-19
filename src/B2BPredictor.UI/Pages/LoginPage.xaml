@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:B2BPredictor.UI.ViewModels"
+             x:Class="B2BPredictor.UI.Pages.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <Grid Padding="24" RowDefinitions="*,Auto,*">
+            <Border Grid.Row="1"
+                    Style="{StaticResource CardBorder}"
+                    MaximumWidthRequest="440"
+                    Padding="28">
+                <VerticalStackLayout Spacing="14">
+
+                    <Label Text="B2B Predictor"
+                           FontSize="30"
+                           FontFamily="OpenSansSemibold"
+                           HorizontalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                           SemanticProperties.HeadingLevel="Level1" />
+                    <Label Text="Прогнозування успішності B2B-угод"
+                           Style="{StaticResource CaptionLabel}"
+                           HorizontalOptions="Center"
+                           Margin="0,0,0,10" />
+
+                    <Label Text="Email" Style="{StaticResource CaptionLabel}" />
+                    <Entry Text="{Binding Email}"
+                           Keyboard="Email"
+                           Placeholder="name@company.com"
+                           AutomationId="EmailEntry" />
+
+                    <Label Text="Пароль" Style="{StaticResource CaptionLabel}" />
+                    <Entry Text="{Binding Password}"
+                           IsPassword="True"
+                           Placeholder="••••••••"
+                           ReturnCommand="{Binding LoginCommand}"
+                           AutomationId="PasswordEntry" />
+
+                    <Label Text="Адреса сервера API" Style="{StaticResource CaptionLabel}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Entry Text="{Binding ServerUrl}"
+                               Keyboard="Url"
+                               Placeholder="http://localhost:8080/" />
+                        <Button Grid.Column="1"
+                                Text="↺"
+                                ToolTipProperties.Text="Адреса за замовчуванням"
+                                Style="{StaticResource SecondaryButton}"
+                                Command="{Binding ResetServerUrlCommand}" />
+                    </Grid>
+
+                    <Label Text="{Binding ErrorMessage}"
+                           Style="{StaticResource ErrorLabel}"
+                           IsVisible="{Binding HasError}" />
+
+                    <Button Text="Увійти"
+                            Command="{Binding LoginCommand}"
+                            IsEnabled="{Binding IsNotBusy}"
+                            Margin="0,8,0,0"
+                            AutomationId="LoginButton" />
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+
+                    <Label Text="Демо-акаунти" Style="{StaticResource CaptionLabel}" HorizontalOptions="Center" Margin="0,8,0,0" />
+                    <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                        <Button Text="Менеджер" Style="{StaticResource SecondaryButton}" Command="{Binding FillManagerCommand}" />
+                        <Button Text="Адміністратор" Style="{StaticResource SecondaryButton}" Command="{Binding FillAdminCommand}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:B2BPredictor.UI.ViewModels"
+             x:Class="B2BPredictor.UI.Pages.PredictionPage"
+             x:DataType="vm:PredictionViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16" MaximumWidthRequest="720">
+
+            <Label Text="Що, якщо? Оцініть угоду до її створення — результат не зберігається в базі."
+                   Style="{StaticResource CaptionLabel}" />
+
+            <!-- Параметри угоди -->
+            <Border Style="{StaticResource CardBorder}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Параметри угоди" Style="{StaticResource SectionTitle}" />
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto" RowSpacing="4">
+                        <Label Text="Сума замовлення, ₴" Style="{StaticResource CaptionLabel}" />
+                        <Entry Grid.Row="1" Keyboard="Numeric" Text="{Binding Amount}" />
+                        <Label Grid.Column="1" Text="Галузь клієнта" Style="{StaticResource CaptionLabel}" />
+                        <Picker Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Industries}" SelectedItem="{Binding Industry}" />
+                    </Grid>
+
+                    <Label Text="{Binding ClientCreditRating, StringFormat='Кредитний рейтинг клієнта: {0:F0} / 100'}"
+                           Style="{StaticResource CaptionLabel}" />
+                    <Slider Minimum="1" Maximum="100" Value="{Binding ClientCreditRating}" />
+
+                    <Label Text="{Binding PaymentTermsDays, StringFormat='Відстрочка платежу: {0:F0} днів'}"
+                           Style="{StaticResource CaptionLabel}" />
+                    <Slider Minimum="0" Maximum="365" Value="{Binding PaymentTermsDays}" />
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto" RowSpacing="4">
+                        <Label Text="Кількість позицій" Style="{StaticResource CaptionLabel}" />
+                        <Entry Grid.Row="1" Keyboard="Numeric" Text="{Binding ItemsCount}" />
+                        <Label Grid.Column="1" Text="Попередні успішні замовлення" Style="{StaticResource CaptionLabel}" />
+                        <Entry Grid.Row="1" Grid.Column="1" Keyboard="Numeric" Text="{Binding PreviousSuccessfulOrdersCount}" />
+                    </Grid>
+
+                    <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasError}" />
+
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="Спрогнозувати" Command="{Binding PredictCommand}" IsEnabled="{Binding IsNotBusy}" />
+                        <Button Text="Очистити" Style="{StaticResource SecondaryButton}" Command="{Binding ResetCommand}" />
+                    </HorizontalStackLayout>
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Результат прогнозу -->
+            <Border Style="{StaticResource CardBorder}"
+                    IsVisible="{Binding HasResult}"
+                    Stroke="{Binding Result.RiskLevel, Converter={StaticResource RiskLevelToColor}}"
+                    StrokeThickness="2">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Результат" Style="{StaticResource SectionTitle}" />
+
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+                        <Label Text="{Binding Result.SuccessProbability, StringFormat='{0:F1}%'}"
+                               FontSize="40"
+                               FontFamily="OpenSansSemibold"
+                               VerticalOptions="Center"
+                               TextColor="{Binding Result.RiskLevel, Converter={StaticResource RiskLevelToColor}}" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                            <Label Text="{Binding Result.RiskLevel}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="18"
+                                   TextColor="{Binding Result.RiskLevel, Converter={StaticResource RiskLevelToColor}}" />
+                            <Label Style="{StaticResource CaptionLabel}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Result.IsLikelySuccessful}" Value="True">
+                                        <Setter Property="Text" Value="Модель очікує успішну угоду" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Result.IsLikelySuccessful}" Value="False">
+                                        <Setter Property="Text" Value="Модель прогнозує ризик зриву угоди" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <ProgressBar Progress="{Binding ResultProgress}"
+                                 ProgressColor="{Binding Result.RiskLevel, Converter={StaticResource RiskLevelToColor}}" />
+
+                    <Label Text="Фактори ризику" FontFamily="OpenSansSemibold"
+                           IsVisible="{Binding HasRiskFactors}" />
+                    <VerticalStackLayout Spacing="4" BindableLayout.ItemsSource="{Binding RiskFactors}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Label Text="{Binding ., StringFormat='• {0}'}" />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Label Text="{Binding Result.ModelVersion, StringFormat='Версія моделі: {0}'}"
+                           Style="{StaticResource CaptionLabel}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Метрики моделі -->
+            <Border Style="{StaticResource CardBorder}"
+                    IsVisible="{Binding Metrics, Converter={StaticResource IsNotNullOrEmpty}}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Якість ML-моделі" Style="{StaticResource SectionTitle}" />
+                    <Label Text="{Binding Metrics.AlgorithmName, StringFormat='Алгоритм: {0}'}" />
+                    <Label Text="{Binding Metrics.Accuracy, StringFormat='Accuracy: {0:P1}'}" />
+                    <Label Text="{Binding Metrics.F1Score, StringFormat='F1-score: {0:P1}'}" />
+                    <Label Text="{Binding Metrics.TrainingSamplesCount, StringFormat='Навчальних прикладів: {0}'}" />
+                    <Label Text="{Binding Metrics.TrainedAtUtc, StringFormat='Навчено: {0:dd.MM.yyyy HH:mm} UTC'}"
+                           Style="{StaticResource CaptionLabel}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

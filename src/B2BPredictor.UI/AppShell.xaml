@@ -3,12 +3,19 @@
     x:Class="B2BPredictor.UI.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:B2BPredictor.UI"
-    Title="B2BPredictor.UI">
+    xmlns:pages="clr-namespace:B2BPredictor.UI.Pages"
+    Title="B2B Predictor"
+    Shell.FlyoutBehavior="Disabled">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Route="login"
+        Title="Вхід"
+        ContentTemplate="{DataTemplate pages:LoginPage}" />
 
+    <TabBar Route="main">
+        <ShellContent Title="Аналітика" Route="dashboard" ContentTemplate="{DataTemplate pages:DashboardPage}" />
+        <ShellContent Title="Клієнти" Route="clients" ContentTemplate="{DataTemplate pages:ClientsPage}" />
+        <ShellContent Title="Замовлення" Route="orders" ContentTemplate="{DataTemplate pages:OrdersPage}" />
+        <ShellContent Title="ML-прогноз" Route="prediction" ContentTemplate="{DataTemplate pages:PredictionPage}" />
+    </TabBar>
 </Shell>

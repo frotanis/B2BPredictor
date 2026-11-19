@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:B2BPredictor.UI.ViewModels"
+             xmlns:contracts="clr-namespace:B2BPredictor.Application.Contracts;assembly=B2BPredictor.Application"
+             x:Class="B2BPredictor.UI.Pages.ClientsPage"
+             x:DataType="vm:ClientsViewModel"
+             Title="{Binding Title}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Новий клієнт" Command="{Binding ToggleFormCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,*" Padding="16,12,16,0" RowSpacing="12">
+
+        <VerticalStackLayout Spacing="10">
+            <SearchBar Text="{Binding SearchText}"
+                       Placeholder="Пошук за назвою, галуззю або email"
+                       SearchCommand="{Binding LoadCommand}" />
+
+            <!-- Форма створення клієнта -->
+            <Border Style="{StaticResource CardBorder}" IsVisible="{Binding IsFormVisible}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Новий клієнт" Style="{StaticResource SectionTitle}" />
+                    <Entry Placeholder="Назва компанії" Text="{Binding NewName}" />
+                    <Picker Title="Галузь" ItemsSource="{Binding Industries}" SelectedItem="{Binding NewIndustry}" />
+                    <Entry Placeholder="Контактний email" Keyboard="Email" Text="{Binding NewContactEmail}" />
+                    <Label Text="{Binding NewCreditRating, StringFormat='Кредитний рейтинг: {0:F0} / 100'}"
+                           Style="{StaticResource CaptionLabel}" />
+                    <Slider Minimum="1" Maximum="100" Value="{Binding NewCreditRating}" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="Зберегти" Command="{Binding CreateCommand}" IsEnabled="{Binding IsNotBusy}" />
+                        <Button Text="Скасувати" Style="{StaticResource SecondaryButton}" Command="{Binding ToggleFormCommand}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasError}" />
+        </VerticalStackLayout>
+
+        <RefreshView Grid.Row="1" IsRefreshing="{Binding IsRefreshing}" Command="{Binding LoadCommand}">
+            <CollectionView ItemsSource="{Binding Clients}" SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <Label Text="Клієнтів не знайдено."
+                           Style="{StaticResource CaptionLabel}"
+                           HorizontalOptions="Center"
+                           Margin="0,24" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="contracts:ClientDto">
+                        <Border Style="{StaticResource CardBorder}" Padding="14">
+                            <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="2">
+                                <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" FontSize="16" />
+                                <Label Grid.Row="1" Text="{Binding Industry}" Style="{StaticResource CaptionLabel}" />
+                                <Label Grid.Row="2" Text="{Binding ContactEmail}" Style="{StaticResource CaptionLabel}" />
+
+                                <VerticalStackLayout Grid.Column="1" Grid.RowSpan="3" VerticalOptions="Center" Spacing="2">
+                                    <Label Text="{Binding CreditRating, StringFormat='Рейтинг {0}'}"
+                                           HorizontalOptions="End"
+                                           FontFamily="OpenSansSemibold"
+                                           TextColor="{Binding CreditRating, Converter={StaticResource ProbabilityToColor}}" />
+                                    <Label Text="{Binding TotalOrdersCount, StringFormat='Замовлень: {0}'}"
+                                           HorizontalOptions="End"
+                                           Style="{StaticResource CaptionLabel}" />
+                                </VerticalStackLayout>
+
+                                <!-- Видалення доступне лише ролі Admin (бекенд також перевіряє) -->
+                                <Button Grid.Column="2" Grid.RowSpan="3"
+                                        Text="✕"
+                                        VerticalOptions="Center"
+                                        BackgroundColor="#C62828"
+                                        TextColor="White"
+                                        ToolTipProperties.Text="Видалити клієнта"
+                                        IsVisible="{Binding CanDelete, Source={RelativeSource AncestorType={x:Type vm:ClientsViewModel}}, x:DataType=vm:ClientsViewModel}"
+                                        Command="{Binding DeleteCommand, Source={RelativeSource AncestorType={x:Type vm:ClientsViewModel}}, x:DataType=vm:ClientsViewModel}"
+                                        CommandParameter="{Binding .}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

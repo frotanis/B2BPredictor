@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:B2BPredictor.UI.ViewModels"
+             xmlns:contracts="clr-namespace:B2BPredictor.Application.Contracts;assembly=B2BPredictor.Application"
+             x:Class="B2BPredictor.UI.Pages.OrdersPage"
+             x:DataType="vm:OrdersViewModel"
+             Title="{Binding Title}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Нове замовлення" Command="{Binding ToggleFormCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16,12,16,8" RowSpacing="12">
+
+        <VerticalStackLayout Spacing="10">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Picker Title="Статус"
+                        ItemsSource="{Binding StatusFilters}"
+                        ItemDisplayBinding="{Binding Label, x:DataType=vm:StatusFilterOption}"
+                        SelectedItem="{Binding SelectedStatusFilter}" />
+                <Button Grid.Column="1" Text="Оновити" Style="{StaticResource SecondaryButton}" Command="{Binding LoadCommand}" />
+            </Grid>
+
+            <!-- Форма створення замовлення: бекенд одразу рахує ML-прогноз -->
+            <Border Style="{StaticResource CardBorder}" IsVisible="{Binding IsFormVisible}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Нове замовлення" Style="{StaticResource SectionTitle}" />
+                    <Picker Title="Клієнт"
+                            ItemsSource="{Binding Clients}"
+                            ItemDisplayBinding="{Binding Name, x:DataType=contracts:ClientDto}"
+                            SelectedItem="{Binding SelectedClient}" />
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <VerticalStackLayout>
+                            <Label Text="Сума, ₴" Style="{StaticResource CaptionLabel}" />
+                            <Entry Keyboard="Numeric" Text="{Binding NewAmount}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="Відстрочка, днів" Style="{StaticResource CaptionLabel}" />
+                            <Entry Keyboard="Numeric" Text="{Binding NewPaymentTermsDays}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2">
+                            <Label Text="Позицій" Style="{StaticResource CaptionLabel}" />
+                            <Entry Keyboard="Numeric" Text="{Binding NewItemsCount}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                    <Entry Placeholder="Примітка (необов'язково)" Text="{Binding NewNotes}" MaxLength="500" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="Створити й спрогнозувати" Command="{Binding CreateCommand}" IsEnabled="{Binding IsNotBusy}" />
+                        <Button Text="Скасувати" Style="{StaticResource SecondaryButton}" Command="{Binding ToggleFormCommand}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Результат щойно створеного замовлення -->
+            <Border Style="{StaticResource CardBorder}"
+                    IsVisible="{Binding LastCreatedOrder, Converter={StaticResource IsNotNullOrEmpty}}"
+                    Stroke="{Binding LastCreatedOrder.RiskLevel, Converter={StaticResource RiskLevelToColor}}"
+                    StrokeThickness="2">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                    <Label Text="{Binding LastCreatedOrder.ClientName, StringFormat='Замовлення для {0} створено'}"
+                           FontFamily="OpenSansSemibold" />
+                    <Button Grid.Column="1" Grid.RowSpan="2" Text="OK"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding DismissLastCreatedCommand}" VerticalOptions="Center" />
+                    <Label Grid.Row="1">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Ймовірність успіху: " />
+                                <Span Text="{Binding LastCreatedOrder.SuccessProbability, StringFormat='{0:F1}%'}"
+                                      FontFamily="OpenSansSemibold"
+                                      TextColor="{Binding LastCreatedOrder.RiskLevel, Converter={StaticResource RiskLevelToColor}}" />
+                                <Span Text=" · " />
+                                <Span Text="{Binding LastCreatedOrder.RiskLevel}"
+                                      TextColor="{Binding LastCreatedOrder.RiskLevel, Converter={StaticResource RiskLevelToColor}}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </Grid>
+            </Border>
+
+            <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasError}" />
+        </VerticalStackLayout>
+
+        <RefreshView Grid.Row="1" IsRefreshing="{Binding IsRefreshing}" Command="{Binding LoadCommand}">
+            <CollectionView ItemsSource="{Binding Orders}" SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <Label Text="Замовлень не знайдено."
+                           Style="{StaticResource CaptionLabel}"
+                           HorizontalOptions="Center"
+                           Margin="0,24" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="contracts:OrderDto">
+                        <Border Style="{StaticResource CardBorder}" Padding="14">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="12">
+
+                                <Label Text="{Binding ClientName}" FontFamily="OpenSansSemibold" FontSize="16" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Amount, StringFormat='{0:N0} ₴'}"
+                                       FontFamily="OpenSansSemibold" FontSize="16" />
+
+                                <HorizontalStackLayout Grid.Row="1" Spacing="8">
+                                    <Border Style="{StaticResource Pill}"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource Gray600}}">
+                                        <Label Text="{Binding Status, Converter={StaticResource OrderStatusToText}}" FontSize="12" />
+                                    </Border>
+                                    <Border Style="{StaticResource Pill}"
+                                            BackgroundColor="{Binding RiskLevel, Converter={StaticResource RiskLevelToColor}}">
+                                        <Label Text="{Binding RiskLevel, TargetNullValue='Без прогнозу'}" FontSize="12" TextColor="White" />
+                                    </Border>
+                                </HorizontalStackLayout>
+                                <Label Grid.Row="1" Grid.Column="1"
+                                       HorizontalOptions="End"
+                                       FontFamily="OpenSansSemibold"
+                                       Text="{Binding SuccessProbability, StringFormat='{0:F1}%', TargetNullValue='—'}"
+                                       TextColor="{Binding RiskLevel, Converter={StaticResource RiskLevelToColor}}" />
+
+                                <Label Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource CaptionLabel}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding PaymentTermsDays, StringFormat='Відстрочка {0} дн.'}" />
+                                            <Span Text=" · " />
+                                            <Span Text="{Binding ItemsCount, StringFormat='{0} поз.'}" />
+                                            <Span Text=" · " />
+                                            <Span Text="{Binding CreatedAtUtc, StringFormat='{0:dd.MM.yyyy}'}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+
+                                <VerticalStackLayout Grid.Row="3" Grid.ColumnSpan="2" Spacing="6">
+                                    <Label Text="{Binding RiskFactors, Converter={StaticResource StringListToText}}"
+                                           Style="{StaticResource CaptionLabel}"
+                                           IsVisible="{Binding RiskFactors, Converter={StaticResource IsNotNullOrEmpty}}" />
+
+                                    <!-- Дії менеджера над замовленням -->
+                                    <HorizontalStackLayout Spacing="8"
+                                                           IsVisible="{Binding Status, Converter={StaticResource OrderStatusEquals}, ConverterParameter=Pending}">
+                                        <Button Text="Схвалити" BackgroundColor="#2E7D32" TextColor="White" Padding="12,4"
+                                                Command="{Binding ApproveCommand, Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, x:DataType=vm:OrdersViewModel}"
+                                                CommandParameter="{Binding .}" />
+                                        <Button Text="Відхилити" BackgroundColor="#C62828" TextColor="White" Padding="12,4"
+                                                Command="{Binding RejectCommand, Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, x:DataType=vm:OrdersViewModel}"
+                                                CommandParameter="{Binding .}" />
+                                    </HorizontalStackLayout>
+                                    <Button Text="Позначити виконаним" Padding="12,4" HorizontalOptions="Start"
+                                            Style="{StaticResource SecondaryButton}"
+                                            IsVisible="{Binding Status, Converter={StaticResource OrderStatusEquals}, ConverterParameter=Approved}"
+                                            Command="{Binding CompleteCommand, Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, x:DataType=vm:OrdersViewModel}"
+                                            CommandParameter="{Binding .}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Пагінація -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+            <Button Text="‹ Назад" Style="{StaticResource SecondaryButton}" Command="{Binding PreviousPageCommand}" />
+            <Label Grid.Column="1" Text="{Binding PageInfo}" Style="{StaticResource CaptionLabel}"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Button Grid.Column="2" Text="Далі ›" Style="{StaticResource SecondaryButton}" Command="{Binding NextPageCommand}" />
+        </Grid>
+    </Grid>
+</ContentPage>
