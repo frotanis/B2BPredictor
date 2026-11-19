@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:B2BPredictor.UI.ViewModels"
+             x:Class="B2BPredictor.UI.Pages.DashboardPage"
+             x:DataType="vm:DashboardViewModel"
+             Title="{Binding Title}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Оновити" Command="{Binding LoadCommand}" />
+        <ToolbarItem Text="Вийти" Command="{Binding LogoutCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <RefreshView IsRefreshing="{Binding IsRefreshing}" Command="{Binding LoadCommand}">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="16">
+
+                <Label Text="{Binding Greeting}" Style="{StaticResource CaptionLabel}" />
+
+                <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" IsVisible="{Binding HasError}" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+
+                <!-- KPI-картки: адаптивно переносяться на вузьких екранах -->
+                <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Stretch">
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,12,12" WidthRequest="200">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Клієнтів" Style="{StaticResource CaptionLabel}" />
+                            <Label Text="{Binding TotalClients}" Style="{StaticResource KpiValue}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,12,12" WidthRequest="200">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Замовлень" Style="{StaticResource CaptionLabel}" />
+                            <Label Text="{Binding TotalOrders}" Style="{StaticResource KpiValue}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,12,12" WidthRequest="200">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Високий ризик" Style="{StaticResource CaptionLabel}" />
+                            <Label Text="{Binding HighRiskOrdersCount}" Style="{StaticResource KpiValue}" TextColor="#C62828" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,12,12" WidthRequest="200">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Середня ймовірність успіху" Style="{StaticResource CaptionLabel}" />
+                            <Label Text="{Binding AverageSuccessProbability, StringFormat='{0:F1}%'}"
+                                   Style="{StaticResource KpiValue}"
+                                   TextColor="{Binding AverageSuccessProbability, Converter={StaticResource ProbabilityToColor}}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,12,12" WidthRequest="200">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Сума воронки" Style="{StaticResource CaptionLabel}" />
+                            <Label Text="{Binding TotalPipelineAmount, StringFormat='{0:N0} ₴'}" Style="{StaticResource KpiValue}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </FlexLayout>
+
+                <Label Text="Статистика за галузями" Style="{StaticResource SectionTitle}" />
+
+                <Label Text="Даних поки немає — створіть перше замовлення."
+                       Style="{StaticResource CaptionLabel}"
+                       IsVisible="{Binding IsIndustryEmpty}" />
+
+                <VerticalStackLayout Spacing="10" BindableLayout.ItemsSource="{Binding ByIndustry}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:IndustryStatsItem">
+                            <Border Style="{StaticResource CardBorder}" Padding="14">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                                    <Label Text="{Binding Industry}" FontFamily="OpenSansSemibold" FontSize="16" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding TotalAmount, StringFormat='{0:N0} ₴'}"
+                                           FontFamily="OpenSansSemibold" />
+                                    <ProgressBar Grid.Row="1" Grid.ColumnSpan="2"
+                                                 Progress="{Binding Progress}"
+                                                 ProgressColor="{Binding AverageSuccessProbability, Converter={StaticResource ProbabilityToColor}}" />
+                                    <Label Grid.Row="2"
+                                           Style="{StaticResource CaptionLabel}"
+                                           Text="{Binding OrdersCount, StringFormat='Замовлень: {0}'}" />
+                                    <Label Grid.Row="2" Grid.Column="1"
+                                           Style="{StaticResource CaptionLabel}"
+                                           Text="{Binding AverageSuccessProbability, StringFormat='Успіх: {0:F1}%'}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

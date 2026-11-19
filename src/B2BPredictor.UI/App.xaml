@@ -2,6 +2,7 @@
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:B2BPredictor.UI"
+             xmlns:conv="clr-namespace:B2BPredictor.UI.Converters"
              x:Class="B2BPredictor.UI.App">
     <Application.Resources>
         <ResourceDictionary>
@@ -9,6 +10,58 @@
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Конвертери -->
+            <conv:ProbabilityToColorConverter x:Key="ProbabilityToColor" />
+            <conv:RiskLevelToColorConverter x:Key="RiskLevelToColor" />
+            <conv:OrderStatusToTextConverter x:Key="OrderStatusToText" />
+            <conv:OrderStatusEqualsConverter x:Key="OrderStatusEquals" />
+            <conv:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmpty" />
+            <conv:StringListToTextConverter x:Key="StringListToText" />
+
+            <!-- Спільні стилі екранів -->
+            <Style x:Key="CardBorder" TargetType="Border">
+                <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+                <Setter Property="StrokeThickness" Value="1" />
+                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" />
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray900}}" />
+                <Setter Property="Padding" Value="16" />
+            </Style>
+
+            <Style x:Key="SectionTitle" TargetType="Label">
+                <Setter Property="FontSize" Value="18" />
+                <Setter Property="FontFamily" Value="OpenSansSemibold" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
+            </Style>
+
+            <Style x:Key="CaptionLabel" TargetType="Label">
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray300}}" />
+            </Style>
+
+            <Style x:Key="KpiValue" TargetType="Label">
+                <Setter Property="FontSize" Value="26" />
+                <Setter Property="FontFamily" Value="OpenSansSemibold" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+            </Style>
+
+            <Style x:Key="ErrorLabel" TargetType="Label">
+                <Setter Property="TextColor" Value="#C62828" />
+                <Setter Property="FontSize" Value="14" />
+            </Style>
+
+            <Style x:Key="SecondaryButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource Gray600}}" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource White}}" />
+            </Style>
+
+            <Style x:Key="Pill" TargetType="Border">
+                <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+                <Setter Property="StrokeThickness" Value="0" />
+                <Setter Property="Padding" Value="8,2" />
+                <Setter Property="HorizontalOptions" Value="Start" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
