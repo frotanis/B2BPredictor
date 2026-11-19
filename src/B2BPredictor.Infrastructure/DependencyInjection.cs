@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IClientService, ClientService>();
         services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IAnalyticsService, AnalyticsService>();
         services.AddSingleton<IPredictionService>(_ => new PredictionService());
         services.AddScoped<DatabaseSeeder>();
 

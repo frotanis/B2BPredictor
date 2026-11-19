@@ -27,8 +27,9 @@ public sealed class OrderService : IOrderService
 
         IQueryable<Order> orders = _db.Orders
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(order => order.Client)
-            .Include(order => order.Predictions.OrderByDescending(prediction => prediction.CreatedAtUtc).Take(1))
+            .Include(order => order.Predictions)
             .ThenInclude(prediction => prediction.RiskFactors);
 
         if (query.Status.HasValue)
@@ -69,8 +70,9 @@ public sealed class OrderService : IOrderService
     {
         var order = await _db.Orders
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(candidate => candidate.Client)
-            .Include(candidate => candidate.Predictions.OrderByDescending(prediction => prediction.CreatedAtUtc).Take(1))
+            .Include(candidate => candidate.Predictions)
             .ThenInclude(prediction => prediction.RiskFactors)
             .SingleOrDefaultAsync(candidate => candidate.Id == id, ct);
 
@@ -206,7 +208,7 @@ public sealed class OrderService : IOrderService
 
         var order = await _db.Orders
             .Include(candidate => candidate.Client)
-            .Include(candidate => candidate.Predictions.OrderByDescending(prediction => prediction.CreatedAtUtc).Take(1))
+            .Include(candidate => candidate.Predictions)
             .ThenInclude(prediction => prediction.RiskFactors)
             .SingleOrDefaultAsync(candidate => candidate.Id == id, ct);
 
