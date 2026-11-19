@@ -13,6 +13,10 @@ var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<Jw
 builder.Services.AddInfrastructure(connectionString, jwtOptions);
 
 var app = builder.Build();
+builder.Services.AddProblemDetails();
+builder.Services.AddHealthChecks();
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())
 {
@@ -25,7 +29,12 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/healthz");
 app.Run();
+
+#pragma warning disable CA1050
+public partial class Program { }
+#pragma warning restore CA1050
 
 public partial class Program
 {
