@@ -1,0 +1,43 @@
+name: B2BPredictor CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore backend & test dependencies
+        run: |
+          dotnet restore src/B2BPredictor.Api/B2BPredictor.Api.csproj
+          dotnet restore tests/B2BPredictor.UnitTests/B2BPredictor.UnitTests.csproj
+          dotnet restore tests/B2BPredictor.IntegrationTests/B2BPredictor.IntegrationTests.csproj
+
+      - name: Build (Release + Static Analyzers)
+        run: |
+          dotnet build src/B2BPredictor.Api/B2BPredictor.Api.csproj -c Release --no-restore
+          dotnet build tests/B2BPredictor.UnitTests/B2BPredictor.UnitTests.csproj -c Release --no-restore
+          dotnet build tests/B2BPredictor.IntegrationTests/B2BPredictor.IntegrationTests.csproj -c Release --no-restore
+
+      - name: Run Unit & Integration Tests with Coverage
+        run: |
+          dotnet test tests/B2BPredictor.UnitTests/B2BPredictor.UnitTests.csproj -c Release --no-build --collect:"XPlat Code Coverage" --results-directory ./coverage
+          dotnet test tests/B2BPredictor.IntegrationTests/B2BPredictor.IntegrationTests.csproj -c Release --no-build --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Upload Coverage Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-reports
+          path: ./coverage/**/coverage.cobertura.xml

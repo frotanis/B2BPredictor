@@ -25,20 +25,25 @@ public sealed class PredictionsController : ApiControllerBase
     public async Task<ActionResult<PredictionResultDto>> Preview(
         [FromBody] OrderPredictionInput input,
         CancellationToken ct = default)
-    {
-        if (input.Amount <= 0)
+    {   
+        if (input.ClientCreditRating is < 1 or > 100)
         {
-            return BadRequestProblem("Сума замовлення має бути більшою за нуль.");
+            return BadRequestProblem("Кредитний рейтинг клієнта має бути в межах від 1 до 100.");
         }
 
-        if (input.PaymentTermsDays < 0)
+        if (input.Amount <= 0)
         {
-            return BadRequestProblem("Термін оплати не може бути від'ємним.");
+            return BadRequestProblem("Сума замовлення має бути більшою за 0.");
+        }
+
+        if (input.PaymentTermsDays is < 0 or > 365)
+        {
+            return BadRequestProblem("Термін оплати має бути в межах від 0 до 365 днів.");
         }
 
         if (input.ItemsCount < 1)
         {
-            return BadRequestProblem("Замовлення має містити щонайменше одну позицію.");
+            return BadRequestProblem("Кількість позицій має бути не менше 1.");
         }
 
         PredictionResultDto result = await _predictions.PredictAsync(input, ct);
