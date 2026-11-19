@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
+builder.Services.AddHealthChecks();
 
 var connectionString = builder.Configuration.GetConnectionString("Default") ?? "Data Source=b2bpredictor.db";
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
@@ -13,8 +15,7 @@ var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<Jw
 builder.Services.AddInfrastructure(connectionString, jwtOptions);
 
 var app = builder.Build();
-builder.Services.AddProblemDetails();
-builder.Services.AddHealthChecks();
+
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
@@ -35,7 +36,3 @@ app.Run();
 #pragma warning disable CA1050
 public partial class Program { }
 #pragma warning restore CA1050
-
-public partial class Program
-{
-}
